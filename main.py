@@ -90,12 +90,12 @@ class App:
 					prefix = "📁"
 
 				# Writes the filename to the screen
-				self.stdscr.addstr(i, 0, f"{prefix} {file}", curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL)
+				self.stdscr.addstr(i * 2 + 2, 1, f"{prefix} {file}", curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL)
 
 			# If we do not want the filename to be accompanied by emojis
 			else:
 				# Writes the filename to the screen
-				self.stdscr.addstr(i, 0, file, curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL)
+				self.stdscr.addstr(i * 2 + 2, 1, file, curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL)
 
 
 	@staticmethod
