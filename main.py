@@ -47,6 +47,9 @@ class App:
 		# Runs for as long as needed
 		self.running = True
 		while self.running:
+			# Applying the asthetic
+			self.apply_aesthetic()
+
 			# Lists all files at the given path
 			self.list_files()
 
@@ -104,6 +107,27 @@ class App:
 		Returns the files at the given file.
 		"""
 		return os.listdir(path)
+
+
+	def apply_aesthetic(self):
+		"""
+		Displays the project aesthetic.
+		"""
+		# Displays the title
+		self.display_middle_screen("THE_FILE_GLOBBER", flags=curses.A_REVERSE)
+
+
+	def display_middle_screen(self, text: str, rows: int = 0, flags = curses.A_NORMAL):
+		"""
+		Displays the given text at the middle of the screen.
+		:param text: The text to display.
+		:param rows: The row number.
+		:param flags: The different flags to add to the text.
+		"""
+		# Gets the middle of the screen
+		middle_screen = self.stdscr.getmaxyx()[1] // 2 - len(text) // 2
+		# Displays the text on the screen
+		self.stdscr.addstr(rows, middle_screen, text, flags)
 
 
 if __name__ == '__main__':
