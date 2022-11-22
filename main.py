@@ -22,6 +22,8 @@ class App:
 		self.path = os.path.dirname(os.path.abspath(__file__))
 		# Which item is currently being selected
 		self.selected_item = 0
+		# The window size
+		self.rows, self.cols = 0, 0
 
 		# Loads the configuration
 		self.config = configparser.ConfigParser()
@@ -47,6 +49,9 @@ class App:
 		# Runs for as long as needed
 		self.running = True
 		while self.running:
+			# Updates the app
+			self.update()
+
 			# Applying the asthetic
 			self.apply_aesthetic()
 
@@ -57,6 +62,13 @@ class App:
 			self.handle_input()
 			if self.key == ":":
 				self.running = False
+
+
+	def update(self):
+		"""
+		Updates the app.
+		"""
+		self.rows, self.cols = self.stdscr.getmaxyx()
 
 
 	def handle_input(self):
@@ -101,14 +113,6 @@ class App:
 				self.stdscr.addstr(i * 2 + 2, 1, file, curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL)
 
 
-	@staticmethod
-	def get_files_at_path(path: str):
-		"""
-		Returns the files at the given file.
-		"""
-		return os.listdir(path)
-
-
 	def apply_aesthetic(self):
 		"""
 		Displays the project aesthetic.
@@ -116,6 +120,13 @@ class App:
 		# Displays the title
 		self.display_middle_screen("THE_FILE_GLOBBER", flags=curses.A_REVERSE)
 
+
+	@staticmethod
+	def get_files_at_path(path: str):
+		"""
+		Returns the files at the given file.
+		"""
+		return os.listdir(path)
 
 	def display_middle_screen(self, text: str, rows: int = 0, flags = curses.A_NORMAL):
 		"""
@@ -125,7 +136,7 @@ class App:
 		:param flags: The different flags to add to the text.
 		"""
 		# Gets the middle of the screen
-		middle_screen = self.stdscr.getmaxyx()[1] // 2 - len(text) // 2
+		middle_screen = self.cols // 2 - len(text) // 2
 		# Displays the text on the screen
 		self.stdscr.addstr(rows, middle_screen, text, flags)
 
