@@ -132,12 +132,16 @@ class App:
 				)
 
 		# Runs through all folders at the current path 📁
-		display_all_list_elements(folders, "📁", self.config["DISPLAY"].getboolean("UseEmojis"),
-		                          self.selected_item < len(folders), color_pair=2)
+		display_all_list_elements(
+			folders, "📁", self.config["DISPLAY"].getboolean("UseEmojis"),
+			self.selected_item < len(folders), color_pair = 2
+		)
 
 		# Then runs through all the files at the current path 📄
-		display_all_list_elements(files, "📄", self.config["DISPLAY"].getboolean("UseEmojis"),
-		                          self.selected_item >= len(folders), len(folders) * 2 + 1, index_minus=len(folders))
+		display_all_list_elements(
+			files, "📄", self.config["DISPLAY"].getboolean("UseEmojis"),
+			self.selected_item >= len(folders), len(folders) * 2 + 1, index_minus = len(folders)
+		)
 
 
 	def apply_aesthetic(self):
