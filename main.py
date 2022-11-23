@@ -2,6 +2,7 @@ import curses
 import _curses
 import os
 import configparser
+import typing
 
 
 class App:
@@ -96,7 +97,8 @@ class App:
 				self.selected_item -= 1
 			elif self.key == "KEY_DOWN":
 				self.selected_item += 1
-			self.selected_item = max(0, min(self.selected_item, len(self.get_files_at_path(self.path)) - 1))
+			files, folders = self.get_files_at_path(self.path)
+			self.selected_item = max(0, min(self.selected_item, len(files) + len(folders) - 1))
 
 		# Returns the pressed key
 		return self.key
@@ -106,35 +108,30 @@ class App:
 		"""
 		Displays the list of files in the window.
 		"""
-		# Runs through all files and at the current path
-		for i, file in enumerate(self.get_files_at_path(self.path)):
-			# Displays the file name accompanied by emojis if the user wants to
-			if self.config["DISPLAY"].getboolean("UseEmojis"):
-				# Chooses as emoji either a document if the element is a file, or a folder if it is a folder;
-				if os.path.isfile(os.path.join(self.path, file)):
-					prefix = "📄"
-				else:
-					prefix = "📁"
+		# Gets all the folders and files at the current path
+		folders, files = self.get_files_at_path(self.path)
 
-				# Writes the filename to the screen
+		# Defines a function to display all the elements of a list with the given prefix
+		def display_all_list_elements(elements: list[str], prefix: str, use_prefix: bool, display_selected: bool,
+		                              starting_row: int = 1, color_pair: int = 1, index_minus: int = 0) -> None:
+			""" Displays all the elements in the list along with the prefix if use_prefix is True. """
+			for i, element in enumerate(elements):
+				# Displays the file name accompanied by emojis if the user wants to# Writes the filename to the screen
 				self.stdscr.addstr(
-					i * 2 + 2,
+					i * 2 + 2 + starting_row,
 					1,
-					f"{prefix} {file}",
-					(curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL) |
-					curses.color_pair(int(os.path.isdir(os.path.join(self.path, file))))
+					(f"{prefix} " if use_prefix else "") + element,
+					(curses.A_REVERSE if i == (self.selected_item - index_minus) and display_selected else curses.A_NORMAL) |
+					curses.color_pair(color_pair)
 				)
 
-			# If we do not want the filename to be accompanied by emojis
-			else:
-				# Writes the filename to the screen
-				self.stdscr.addstr(
-					i * 2 + 2,
-					1,
-					file,
-					(curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL) |
-					curses.color_pair(int(os.path.isdir(os.path.join(self.path, file))))
-				)
+		# Runs through all folders at the current path 📁
+		display_all_list_elements(folders, "📁", self.config["DISPLAY"].getboolean("UseEmojis"),
+		                          self.selected_item < len(folders), color_pair=2)
+
+		# Then runs through all the files at the current path 📄
+		display_all_list_elements(files, "📄", self.config["DISPLAY"].getboolean("UseEmojis"),
+		                          self.selected_item >= len(folders), len(folders) * 2 + 1, index_minus=len(folders))
 
 
 	def apply_aesthetic(self):
@@ -146,11 +143,25 @@ class App:
 
 
 	@staticmethod
-	def get_files_at_path(path: str):
+	def get_files_at_path(path: str) -> tuple[list, list]:
 		"""
-		Returns the files at the given file.
+		Returns the folders and files at the given path in the correct order.
 		"""
-		return os.listdir(path)
+		# Lists all files at the given path
+		all_files = os.listdir(path)
+
+		# Sets up all the files and folders as a list
+		folders, files = [], []
+
+		# Fetches all the elements and determines whether it is a file or a folder, the adds it to the correct list
+		for element in all_files:
+			if os.path.isdir(os.path.join(path, element)):
+				folders.append(element)
+			else:
+				files.append(element)
+
+		# Returns the folders followed by the files
+		return folders, files
 
 	def display_middle_screen(self, text: str, rows: int = 0, flags = curses.A_NORMAL):
 		"""
