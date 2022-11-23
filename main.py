@@ -21,6 +21,7 @@ class App:
 		self.key = ""
 		# The current path
 		self.path = os.path.dirname(os.path.abspath(__file__))
+		self.temp_path = self.path  # The path currently being written
 		# Which item is currently being selected
 		self.selected_item = 0
 		# The window size
@@ -98,13 +99,41 @@ class App:
 		self.key = self.stdscr.getkey()
 
 		# If it is a special key, we detect it
-		if self.key.startswith("KEY_"):
+		if self.key in ("\b", "\0", "\n") or self.key.startswith("KEY_"):
+			# Grabs all the files and folders at the current path
+			folders, files = self.get_files_at_path(self.path, self.file_acceptation_condition)
+
+			# Selecting an item upwards or downwards
 			if self.key == "KEY_UP":
 				self.selected_item -= 1
 			elif self.key == "KEY_DOWN":
 				self.selected_item += 1
-			files, folders = self.get_files_at_path(self.path, self.file_acceptation_condition)
+
+			# Removing the last character of the temporary path if using the backspace key
+			elif self.key in ("KEY_BACKSPACE", "\b", "\0"):
+				# If there is at least a character in the temp path, we remove the last character
+				if len(self.temp_path) > 0:
+					self.temp_path = self.temp_path[:-1]
+
+			# Adds the selected folder's name to the temporary path if the user pressed Enter
+			elif self.key in ("\n", "KEY_ENTER"):
+				if len(folders) > self.selected_item >= 0:  # If the selected item is a folder
+					temp_path = os.path.join(self.path, folders[self.selected_item])
+					if os.path.exists(temp_path):
+						self.path = temp_path
+						self.temp_path = self.path
+						self.selected_item = 0
+
+			# Clamps the selected item for it not to bug
 			self.selected_item = max(0, min(self.selected_item, len(files) + len(folders) - 1))
+
+		# If it is a regular key, we add the key to the temporary path
+		else:
+			self.temp_path += self.key
+
+		# If the temp path is a valid path, we make the current path be the contents of the temporary path
+		if os.path.exists(self.temp_path):
+			self.path = self.temp_path
 
 		# Returns the pressed key
 		return self.key
@@ -123,13 +152,17 @@ class App:
 			""" Displays all the elements in the list along with the prefix if use_prefix is True. """
 			for i, element in enumerate(elements):
 				# Displays the file name accompanied by emojis if the user wants to# Writes the filename to the screen
-				self.stdscr.addstr(
-					i * 2 + 2 + starting_row,
-					1,
-					(f"{prefix} " if use_prefix else "") + element,
-					(curses.A_REVERSE if i == (self.selected_item - index_minus) and display_selected else curses.A_NORMAL) |
-					curses.color_pair(color_pair)
-				)
+				try:
+					self.stdscr.addstr(
+						i + 2 + starting_row,
+						1,
+						(f"{prefix} " if use_prefix else "") + element,
+						(curses.A_REVERSE if i == (self.selected_item - index_minus) and display_selected else curses.A_NORMAL) |
+						curses.color_pair(color_pair)
+					)
+
+					# If the user pressed Enter, we add the selected item's value to the path
+				except curses.error: pass
 
 		# Runs through all folders at the current path 📁
 		display_all_list_elements(
@@ -140,7 +173,7 @@ class App:
 		# Then runs through all the files at the current path 📄
 		display_all_list_elements(
 			files, "📄", self.config["DISPLAY"].getboolean("UseEmojis"),
-			self.selected_item >= len(folders), len(folders) * 2 + 1, index_minus = len(folders)
+			self.selected_item >= len(folders), len(folders) + 1, index_minus = len(folders)
 		)
 
 
@@ -150,6 +183,9 @@ class App:
 		"""
 		# Displays the title
 		self.display_middle_screen("THE_FILE_GLOBBER", flags=curses.A_REVERSE)
+
+		# Displays the temporary path at the bottom of the screen
+		self.stdscr.addstr(self.rows - 1, 0, self.temp_path[:self.cols - 1])
 
 
 	@staticmethod
