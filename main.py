@@ -25,10 +25,12 @@ class App:
 		self.selected_item = 0
 		# The window size
 		self.rows, self.cols = 0, 0
+		# Whether to accept a file in the indexing
+		self.file_acceptation_condition = lambda filename: not filename.startswith(".")
 
 		# Loads the configuration
 		self.config = configparser.ConfigParser()
-		self.config.read("config.ini")
+		self.config.read(os.path.join(self.path, "config.ini"))
 
 
 	def run(self):
@@ -81,6 +83,10 @@ class App:
 		"""
 		Updates the app.
 		"""
+		# Clears the screen
+		self.stdscr.clear()
+
+		# Calculates the amount of rows and columns in the app, mostly to update columns
 		self.rows, self.cols = self.stdscr.getmaxyx()
 
 
@@ -97,7 +103,7 @@ class App:
 				self.selected_item -= 1
 			elif self.key == "KEY_DOWN":
 				self.selected_item += 1
-			files, folders = self.get_files_at_path(self.path)
+			files, folders = self.get_files_at_path(self.path, self.file_acceptation_condition)
 			self.selected_item = max(0, min(self.selected_item, len(files) + len(folders) - 1))
 
 		# Returns the pressed key
@@ -109,7 +115,7 @@ class App:
 		Displays the list of files in the window.
 		"""
 		# Gets all the folders and files at the current path
-		folders, files = self.get_files_at_path(self.path)
+		folders, files = self.get_files_at_path(self.path, self.file_acceptation_condition)
 
 		# Defines a function to display all the elements of a list with the given prefix
 		def display_all_list_elements(elements: list[str], prefix: str, use_prefix: bool, display_selected: bool,
@@ -143,9 +149,16 @@ class App:
 
 
 	@staticmethod
-	def get_files_at_path(path: str) -> tuple[list, list]:
+	def get_files_at_path(path: str, addition_condition: typing.Callable = lambda name: True) -> tuple[list, list]:
 		"""
 		Returns the folders and files at the given path in the correct order.
+		:param path: The path of the folder to run the function on.
+		:param addition_condition: A condition on whether to add the item to the list, generally a lambda. Default will always add to the list.
+		:return: Returns the folder and files as a tuple of two lists of strings.
+		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)))
+		(['.git', '.idea', '__pycache__'], ['.gitignore', 'config.ini', 'main.py'])
+		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), lambda filename: not filename.startswith('.'))
+		(['__pycache__'], ['config.ini', 'main.py'])
 		"""
 		# Lists all files at the given path
 		all_files = os.listdir(path)
@@ -155,10 +168,12 @@ class App:
 
 		# Fetches all the elements and determines whether it is a file or a folder, the adds it to the correct list
 		for element in all_files:
-			if os.path.isdir(os.path.join(path, element)):
-				folders.append(element)
-			else:
-				files.append(element)
+			# Checks if the element is viable and if so, adds it to the correct list
+			if addition_condition(element):
+				if os.path.isdir(os.path.join(path, element)):
+					folders.append(element)
+				else:
+					files.append(element)
 
 		# Returns the folders followed by the files
 		return folders, files
