@@ -38,11 +38,23 @@ class App:
 		curses.wrapper(self.main)
 
 
+	def late_init(self):
+		"""
+		Makes the init after the curses launch.
+		"""
+		# Defines the curses color pairs
+		curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)   # NORMAL COLOR
+		curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)  # FOLDER COLOR
+
+
 	def main(self, stdscr):
 		"""
 		The app's main function.
 		:param stdscr: The curses screen.
 		"""
+		# Does the late init
+		self.late_init()
+
 		# Defines the standard curses screen
 		self.stdscr = stdscr
 
@@ -105,12 +117,24 @@ class App:
 					prefix = "📁"
 
 				# Writes the filename to the screen
-				self.stdscr.addstr(i * 2 + 2, 1, f"{prefix} {file}", curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL)
+				self.stdscr.addstr(
+					i * 2 + 2,
+					1,
+					f"{prefix} {file}",
+					(curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL) |
+					curses.color_pair(int(os.path.isdir(os.path.join(self.path, file))))
+				)
 
 			# If we do not want the filename to be accompanied by emojis
 			else:
 				# Writes the filename to the screen
-				self.stdscr.addstr(i * 2 + 2, 1, file, curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL)
+				self.stdscr.addstr(
+					i * 2 + 2,
+					1,
+					file,
+					(curses.A_REVERSE if i == self.selected_item else curses.A_NORMAL) |
+					curses.color_pair(int(os.path.isdir(os.path.join(self.path, file))))
+				)
 
 
 	def apply_aesthetic(self):
