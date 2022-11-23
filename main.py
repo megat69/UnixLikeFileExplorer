@@ -187,6 +187,9 @@ class App:
 		# Displays the temporary path at the bottom of the screen
 		self.stdscr.addstr(self.rows - 1, 0, self.temp_path[:self.cols - 1])
 
+		# Displays the current path on top of the file tree
+		self.stdscr.addstr(2, 1, self.path[:self.cols - 1])
+
 
 	@staticmethod
 	def get_files_at_path(path: str, addition_condition: typing.Callable = lambda name: True) -> tuple[list, list]:
