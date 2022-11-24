@@ -146,22 +146,48 @@ class App:
 		# Gets all the folders and files at the current path
 		folders, files = self.get_files_at_path(self.path, self.file_acceptation_condition)
 
+		# Defines the maximum column length any filename has been at
+		max_column_length = 0
+		current_column = 0
+
 		# Defines a function to display all the elements of a list with the given prefix
 		def display_all_list_elements(elements: list[str], prefix: str, use_prefix: bool, display_selected: bool,
 		                              starting_row: int = 1, color_pair: int = 1, index_minus: int = 0) -> None:
 			""" Displays all the elements in the list along with the prefix if use_prefix is True. """
+			nonlocal max_column_length, current_column
+			# Defines a temporary max column length for the next max column length
+			temp_max_column_length = 0
+
+			# Fetches all elements
 			for i, element in enumerate(elements):
+				# Chooses the row position
+				row_position = i + 2 + starting_row
+				# While the row position exceeds the amount of rows in the console, we reduce it accordingly.
+				while row_position >= (self.rows - 2):
+					row_position -= (self.rows - 2)
+
+				# Sets the temp max column length to the highest value it can have from the elements
+				temp_max_column_length = max(temp_max_column_length, len(element) + 2)
+
+				# Adds the temp max column length to the max column length and resets it if the length of the columns is reached
+				if (i + 2 + starting_row) - (current_column * (self.rows - 5)) >= self.rows - 2:
+					max_column_length += temp_max_column_length + 1
+					temp_max_column_length = 0
+					current_column += 1
+
+				# Corrects the position if the column is not the first one
+				if current_column != 0:
+					row_position += 3
+
 				# Displays the file name accompanied by emojis if the user wants to# Writes the filename to the screen
 				try:
 					self.stdscr.addstr(
-						i + 2 + starting_row,
-						1,
+						row_position,
+						1 + max_column_length,
 						(f"{prefix} " if use_prefix else "") + element,
 						(curses.A_REVERSE if i == (self.selected_item - index_minus) and display_selected else curses.A_NORMAL) |
 						curses.color_pair(color_pair)
 					)
-
-					# If the user pressed Enter, we add the selected item's value to the path
 				except curses.error: pass
 
 		# Runs through all folders at the current path 📁
