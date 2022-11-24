@@ -81,6 +81,68 @@ class App:
 			# Looks for the given key
 			self.handle_input()
 			if self.key == App.EXIT_APP:
+				self.quit()
+
+
+	def quit(self, force: bool = False):
+		"""
+		Quits the app.
+		"""
+		if force:
+			self.running = False
+		else:
+			# Finding the middle of the screen
+			screen_middle_y, screen_middle_x = self.rows // 2, self.cols // 2
+
+			# Remembering the selected element
+			selected_element = 0
+
+			# Initializing the key
+			key = ""
+
+			# Clearing the screen
+			self.stdscr.clear()
+
+			# Looping until the user selects an item
+			while key not in ("\n", "\t"):
+				# Displays the menu title
+				label = "Do you want to leave ?"
+				self.stdscr.addstr(
+					screen_middle_y - 2,
+					screen_middle_x - len(label) // 2,
+					label
+				)
+
+				# Displays the menu
+				for i, command in enumerate(("Yes", "No")):
+					# Displays the menu item
+					self.stdscr.addstr(
+						screen_middle_y - 1 + i,
+						screen_middle_x - len(command) // 2,
+						command,
+						curses.A_NORMAL if i != selected_element else curses.A_REVERSE
+						# Reverses the color if the item is selected
+					)
+
+				# Fetches a key
+				key = self.stdscr.getkey()
+
+				# Selects another item
+				if key == "KEY_UP":
+					selected_element -= 1
+				elif key == "KEY_DOWN":
+					selected_element += 1
+				# Wrap-around
+				if selected_element < 0:
+					selected_element = 1
+				elif selected_element > 1:
+					selected_element = 0
+
+			# Clears the screen
+			self.stdscr.clear()
+
+			# If we selected "Yes" to the question of whether to leave, we leave.
+			if not bool(selected_element):
 				self.running = False
 
 
@@ -103,7 +165,7 @@ class App:
 		self.key = self.stdscr.getkey()
 
 		# If it is a special key, we detect it
-		if self.key in ("\b", "\0", "\n") or self.key.startswith("KEY_"):
+		if self.key in ("\b", "\0", "\n", App.EXIT_APP) or self.key.startswith("KEY_"):
 			# Gets the correct path
 			if self.temp_path.count(":") > (1 if platform.system() == "Windows" else 0):  # Pattern
 				tmp = self.temp_path.split(":")
@@ -262,7 +324,6 @@ class App:
 
 		# Displays the current path on top of the file tree
 		self.stdscr.addstr(2, 1, self.path[:self.cols - 1])
-
 
 	@staticmethod
 	def get_files_at_path(path: str, addition_condition: typing.Callable = lambda name: True,
