@@ -122,9 +122,14 @@ class App:
 				if len(folders) > self.selected_item >= 0:  # If the selected item is a folder
 					temp_path = os.path.join(self.path, folders[self.selected_item])
 					if os.path.exists(temp_path):
+						# Also normalizes the path upon pressing enter
+						temp_path = os.path.normpath(temp_path)
+
+						# Setting the current path to the temp path
 						self.path = temp_path
 						self.temp_path = self.path
 						self.selected_item = 0
+
 				else:  # If the selected item is a file, we open it
 					filepath = os.path.join(self.path, files[self.selected_item - len(folders)])
 					if platform.system() == 'Darwin':  # macOS
@@ -228,15 +233,19 @@ class App:
 
 
 	@staticmethod
-	def get_files_at_path(path: str, addition_condition: typing.Callable = lambda name: True) -> tuple[list, list]:
+	def get_files_at_path(path: str, addition_condition: typing.Callable = lambda name: True,
+	                      show_parent_folder: bool = True) -> tuple[list, list]:
 		"""
 		Returns the folders and files at the given path in the correct order.
 		:param path: The path of the folder to run the function on.
 		:param addition_condition: A condition on whether to add the item to the list, generally a lambda. Default will always add to the list.
+		:param show_parent_folder: Shows the parent folder if True. Default is True.
 		:return: Returns the folder and files as a tuple of two lists of strings.
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)))
-		(['.git', '.idea', '__pycache__'], ['.gitignore', 'config.ini', 'main.py'])
+		(['..', '.git', '.idea', '__pycache__'], ['.gitignore', 'config.ini', 'main.py'])
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), lambda filename: not filename.startswith('.'))
+		(['..', '__pycache__'], ['config.ini', 'main.py'])
+		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), lambda filename: not filename.startswith('.'), show_parent_folder=False)
 		(['__pycache__'], ['config.ini', 'main.py'])
 		"""
 		# Lists all files at the given path
@@ -244,6 +253,8 @@ class App:
 
 		# Sets up all the files and folders as a list
 		folders, files = [], []
+		if show_parent_folder:
+			folders.append("..")
 
 		# Fetches all the elements and determines whether it is a file or a folder, the adds it to the correct list
 		for element in all_files:
