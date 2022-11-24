@@ -169,7 +169,7 @@ class App:
 		self.key = self.stdscr.getkey()
 
 		# If it is a special key, we detect it
-		if self.key in ("\b", "\0", "\n", App.EXIT_APP) or self.key.startswith("KEY_"):
+		if self.key in ("\b", "\0", "\n", App.EXIT_APP, "SHF_PADSLASH") or self.key.startswith("KEY_"):
 			# Gets the correct path
 			if self.temp_path.count(":") > (1 if platform.system() == "Windows" else 0):  # Pattern
 				tmp = self.temp_path.split(":")
@@ -224,6 +224,10 @@ class App:
 						os.startfile(filepath)
 					else:  # linux variants
 						subprocess.call(('xdg-open', filepath))
+
+			# Bugfix for exclamation mark
+			if self.key == "SHF_PADSLASH":
+				self.temp_path += "!"
 
 			# Clamps the selected item for it not to bug
 			self.selected_item = max(0, min(self.selected_item, len(files) + len(folders) - 1))
