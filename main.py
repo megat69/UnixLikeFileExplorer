@@ -1,6 +1,7 @@
 import curses
 import _curses
 import os
+import glob
 import platform
 import subprocess
 import configparser
@@ -103,8 +104,20 @@ class App:
 
 		# If it is a special key, we detect it
 		if self.key in ("\b", "\0", "\n") or self.key.startswith("KEY_"):
+			# Gets the correct path
+			if self.temp_path.count(":") > (1 if platform.system() == "Windows" else 0):  # Pattern
+				tmp = self.temp_path.split(":")
+				pattern = tmp.pop()
+				path = ":".join(tmp)
+				del tmp
+				show_parent_folder = False
+			else:  # No pattern
+				pattern = None
+				path = self.path
+				show_parent_folder = True
+
 			# Grabs all the files and folders at the current path
-			folders, files = self.get_files_at_path(self.path, self.file_acceptation_condition)
+			folders, files = self.get_files_at_path(path, self.file_acceptation_condition, pattern=pattern, show_parent_folder=show_parent_folder)
 
 			# Selecting an item upwards or downwards
 			if self.key == "KEY_UP":
@@ -165,8 +178,20 @@ class App:
 		"""
 		Displays the list of files in the window.
 		"""
+		# Detects whether the user inputted a pattern
+		if self.temp_path.count(":") > (1 if platform.system() == "Windows" else 0):  # Pattern
+			tmp = self.temp_path.split(":")
+			pattern = tmp.pop()
+			path = ":".join(tmp)
+			del tmp
+			show_parent_folder = False
+		else:  # No pattern
+			pattern = None
+			path = self.path
+			show_parent_folder = True
+
 		# Gets all the folders and files at the current path
-		folders, files = self.get_files_at_path(self.path, self.file_acceptation_condition)
+		folders, files = self.get_files_at_path(path, self.file_acceptation_condition, pattern=pattern, show_parent_folder=show_parent_folder)
 
 		# Defines the maximum column length any filename has been at
 		max_column_length = 0
@@ -241,12 +266,13 @@ class App:
 
 	@staticmethod
 	def get_files_at_path(path: str, addition_condition: typing.Callable = lambda name: True,
-	                      show_parent_folder: bool = True) -> tuple[list, list]:
+	                      show_parent_folder: bool = True, pattern: str | None = None) -> tuple[list, list]:
 		"""
 		Returns the folders and files at the given path in the correct order.
 		:param path: The path of the folder to run the function on.
 		:param addition_condition: A condition on whether to add the item to the list, generally a lambda. Default will always add to the list.
 		:param show_parent_folder: Shows the parent folder if True. Default is True.
+		:param pattern: Which pattern to use at the target path. Default is None, so no pattern.
 		:return: Returns the folder and files as a tuple of two lists of strings.
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)))
 		(['..', '.git', '.idea', '__pycache__'], ['.gitignore', 'config.ini', 'main.py'])
@@ -254,9 +280,16 @@ class App:
 		(['..', '__pycache__'], ['config.ini', 'main.py'])
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), lambda filename: not filename.startswith('.'), show_parent_folder=False)
 		(['__pycache__'], ['config.ini', 'main.py'])
+		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), pattern="*.py")
+		(['..'], ['main.py'])
+		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), pattern="*.py", show_parent_folder=False)
+		([], ['main.py'])
 		"""
 		# Lists all files at the given path
-		all_files = os.listdir(path)
+		if pattern is None:
+			all_files = os.listdir(path)
+		else:
+			all_files = glob.glob(pattern, root_dir=path)
 
 		# Sets up all the files and folders as a list
 		folders, files = [], []
