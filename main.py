@@ -11,6 +11,7 @@ class App:
 	"""
 	The App.
 	"""
+	EXIT_APP = '$'
 	def __init__(self):
 		"""
 		Initializes the app.
@@ -78,7 +79,7 @@ class App:
 
 			# Looks for the given key
 			self.handle_input()
-			if self.key == ":":
+			if self.key == App.EXIT_APP:
 				self.running = False
 
 
