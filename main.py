@@ -30,12 +30,16 @@ class App:
 		self.selected_item = 0
 		# The window size
 		self.rows, self.cols = 0, 0
-		# Whether to accept a file in the indexing
-		self.file_acceptation_condition = lambda filename: not filename.startswith(".")
 
 		# Loads the configuration
 		self.config = configparser.ConfigParser()
 		self.config.read(os.path.join(self.path, "config.ini"))
+
+		# Whether to accept a file in the indexing
+		if self.config["GENERAL"].getboolean("ShowHiddenFiles") is False:
+			self.file_acceptation_condition = lambda filename: not filename.startswith(".")
+		else:
+			self.file_acceptation_condition = lambda filename: True
 
 
 	def run(self):
