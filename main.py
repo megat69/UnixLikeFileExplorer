@@ -1,6 +1,8 @@
 import curses
 import _curses
 import os
+import platform
+import subprocess
 import configparser
 import typing
 
@@ -123,6 +125,14 @@ class App:
 						self.path = temp_path
 						self.temp_path = self.path
 						self.selected_item = 0
+				else:  # If the selected item is a file, we open it
+					filepath = os.path.join(self.path, files[self.selected_item - len(folders)])
+					if platform.system() == 'Darwin':  # macOS
+						subprocess.call(('open', filepath))
+					elif platform.system() == 'Windows':  # Windows
+						os.startfile(filepath)
+					else:  # linux variants
+						subprocess.call(('xdg-open', filepath))
 
 			# Clamps the selected item for it not to bug
 			self.selected_item = max(0, min(self.selected_item, len(files) + len(folders) - 1))
