@@ -256,14 +256,17 @@ class App:
 		if show_parent_folder:
 			folders.append("..")
 
-		# Fetches all the elements and determines whether it is a file or a folder, the adds it to the correct list
-		for element in all_files:
-			# Checks if the element is viable and if so, adds it to the correct list
-			if addition_condition(element):
-				if os.path.isdir(os.path.join(path, element)):
-					folders.append(element)
-				else:
-					files.append(element)
+		try:  # Try block in case the permission is not granted by the OS to look at this folder
+			# Fetches all the elements and determines whether it is a file or a folder, the adds it to the correct list
+			for element in all_files:
+				# Checks if the element is viable and if so, adds it to the correct list
+				if addition_condition(element):
+					if os.path.isdir(os.path.join(path, element)):
+						folders.append(element)
+					else:
+						files.append(element)
+		except PermissionError:
+			pass
 
 		# Returns the folders followed by the files
 		return folders, files
