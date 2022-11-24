@@ -11,7 +11,6 @@ class App:
 	"""
 	The App.
 	"""
-	EXIT_KEY = '$'
 	def __init__(self):
 		"""
 		Initializes the app.
@@ -79,7 +78,7 @@ class App:
 
 			# Looks for the given key
 			self.handle_input()
-			if self.key == App.EXIT_KEY:
+			if self.key == ":":
 				self.running = False
 
 
@@ -132,18 +131,10 @@ class App:
 						# Also normalizes the path upon pressing enter
 						temp_path = os.path.normpath(temp_path)
 
-						# If the selected folder is '..', we reselect the folder we just left in the selected item
-						if folders[self.selected_item] == '..':
-							try:
-								self.selected_item = self.get_files_at_path(temp_path)[0].index(os.path.basename(self.path))
-							except IndexError:
-								self.selected_item = 0
-						else:
-							self.selected_item = 0
-
 						# Setting the current path to the temp path
 						self.path = temp_path
 						self.temp_path = self.path
+						self.selected_item = 0
 
 				else:  # If the selected item is a file, we open it
 					filepath = os.path.join(self.path, files[self.selected_item - len(folders)])
