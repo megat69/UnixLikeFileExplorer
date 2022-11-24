@@ -111,6 +111,12 @@ class App:
 			elif self.key == "KEY_DOWN":
 				self.selected_item += 1
 
+			# Selecting an item in another column
+			if self.key == "KEY_LEFT":
+				self.selected_item -= self.rows - 5
+			elif self.key == "KEY_RIGHT":
+				self.selected_item += self.rows - 5
+
 			# Removing the last character of the temporary path if using the backspace key
 			elif self.key in ("KEY_BACKSPACE", "\b", "\0"):
 				# If there is at least a character in the temp path, we remove the last character
