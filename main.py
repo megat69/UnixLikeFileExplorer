@@ -15,6 +15,7 @@ class App:
 	The App.
 	"""
 	EXIT_APP = '$'
+
 	def __init__(self):
 		"""
 		Initializes the app.
