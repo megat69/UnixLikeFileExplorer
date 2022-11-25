@@ -412,10 +412,26 @@ class App:
 
 
 if __name__ == '__main__':
+	# Checks if the user wants to see the help
+	if "-h" in sys.argv or "--help" in sys.argv:
+		print("""
+		--------- 'THE_FILE_GLOBBER' ---------
+		A console application that functions as a file explorer, but entirely cross-platform.
+		It's main objective is to allow the use of Unix-like patterns on Windows.
+		
+		--------- HELP ---------
+		Command line arguments :
+		-h, --help                : Shows this message and exits
+		-p, --default-path <path> : Changes the app's default path from the user's home directory to the given path 
+		""".replace("\t", ""))
+		sys.exit(0)
+
+	# Instanciates the app
 	app = App()
 
-	# Parses the default path for the app to start in
+	# Parses the command line arguments with required arguments
 	for i in range(1, len(sys.argv), 2):
+		# Changes the default path
 		if sys.argv[i] in ("--default-path", "-p"):
 			app.change_path_to(sys.argv[i + 1])
 
