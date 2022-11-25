@@ -95,60 +95,70 @@ class App:
 		if force:
 			self.running = False
 		else:
-			# Finding the middle of the screen
-			screen_middle_y, screen_middle_x = self.rows // 2, self.cols // 2
-
 			# Remembering the selected element
-			selected_element = 0
+			selected_element = self.display_menu(("Yes", "No"), "Do you want to quit ?")
 
-			# Initializing the key
-			key = ""
+			# If we selected "Yes" to the question of whether to leave, we leave.
+			if not bool(selected_element):
+				self.running = False
 
-			# Clearing the screen
-			self.stdscr.clear()
+	def display_menu(self, commands: tuple[str, ...], label: str = None) -> int:
+		"""
+		Displays the given command menu and returns which command was selected (index).
+		:param commands: A tuple of strings corresponding to each option in the menu.
+		:param label: (Optional) The title to label the menu.
+		:return: The index of the selected item in the commands menu.
+		"""
+		# Finding the middle of the screen
+		screen_middle_y, screen_middle_x = self.rows // 2, self.cols // 2
 
-			# Looping until the user selects an item
-			while key not in ("\n", "\t"):
-				# Displays the menu title
-				label = "Do you want to leave ?"
+		# Finding the selected element
+		selected_element = 0
+
+		# Initializing the key
+		key = ""
+		# Clearing the screen
+		self.stdscr.clear()
+		# Looping until the user selects an item
+		while key not in ("\n", "\t"):
+			# Displays the menu title
+			if label is not None:
 				self.stdscr.addstr(
 					screen_middle_y - 2,
 					screen_middle_x - len(label) // 2,
 					label
 				)
 
-				# Displays the menu
-				for i, command in enumerate(("Yes", "No")):
-					# Displays the menu item
-					self.stdscr.addstr(
-						screen_middle_y - 1 + i,
-						screen_middle_x - len(command) // 2,
-						command,
-						curses.A_NORMAL if i != selected_element else curses.A_REVERSE
-						# Reverses the color if the item is selected
-					)
+			# Displays the menu
+			for i, command in enumerate(commands):
+				# Displays the menu item
+				self.stdscr.addstr(
+					screen_middle_y - len(commands) // 2 + i,
+					screen_middle_x - len(command) // 2,
+					command,
+					curses.A_NORMAL if i != selected_element else curses.A_REVERSE
+					# Reverses the color if the item is selected
+				)
 
-				# Fetches a key
-				key = self.stdscr.getkey()
+			# Fetches a key
+			key = self.stdscr.getkey()
 
-				# Selects another item
-				if key == "KEY_UP":
-					selected_element -= 1
-				elif key == "KEY_DOWN":
-					selected_element += 1
-				# Wrap-around
-				if selected_element < 0:
-					selected_element = 1
-				elif selected_element > 1:
-					selected_element = 0
+			# Selects another item
+			if key == "KEY_UP":
+				selected_element -= 1
+			elif key == "KEY_DOWN":
+				selected_element += 1
+			# Wrap-around
+			if selected_element < 0:
+				selected_element = len(commands) - 1
+			elif selected_element > len(commands) - 1:
+				selected_element = 0
 
-			# Clears the screen
-			self.stdscr.clear()
+		# Clears the screen
+		self.stdscr.clear()
 
-			# If we selected "Yes" to the question of whether to leave, we leave.
-			if not bool(selected_element):
-				self.running = False
-
+		# Returns the selected element
+		return selected_element
 
 	def update(self):
 		"""
