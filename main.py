@@ -3,6 +3,7 @@ import _curses
 import sys
 import os
 import glob
+from pathlib import Path
 import platform
 import subprocess
 import configparser
@@ -25,7 +26,7 @@ class App:
 		# The currently pressed key
 		self.key = ""
 		# The current path
-		self.path = os.path.dirname(os.path.abspath(__file__))
+		self.path = str(Path.home())
 		self.temp_path = self.path  # The path currently being written
 		# Which item is currently being selected
 		self.selected_item = 0
@@ -34,7 +35,7 @@ class App:
 
 		# Loads the configuration
 		self.config = configparser.ConfigParser()
-		self.config.read(os.path.join(self.path, "config.ini"))
+		self.config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.ini"))
 
 		# Whether to accept a file in the indexing
 		if self.config["GENERAL"].getboolean("ShowHiddenFiles") is False:
