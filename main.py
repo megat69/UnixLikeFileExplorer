@@ -354,11 +354,11 @@ class App:
 		:param pattern: Which pattern to use at the target path. Default is None, so no pattern.
 		:return: Returns the folder and files as a tuple of two lists of strings.
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)))
-		(['..', '.git', '.idea', '__pycache__'], ['.gitignore', 'config.ini', 'main.py', 'requirements-windows.txt', 'setup.py'])
+		(['..', '.git', '.idea', '__pycache__'], ['.gitignore', 'config.ini', 'main.py', 'README.md', 'requirements-windows.txt', 'setup.py'])
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), lambda filename: not filename.startswith('.'))
-		(['..', '__pycache__'], ['config.ini', 'main.py', 'requirements-windows.txt', 'setup.py'])
+		(['..', '__pycache__'], ['config.ini', 'main.py', 'README.md', 'requirements-windows.txt', 'setup.py'])
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), lambda filename: not filename.startswith('.'), show_parent_folder=False)
-		(['__pycache__'], ['config.ini', 'main.py', 'requirements-windows.txt', 'setup.py'])
+		(['__pycache__'], ['config.ini', 'main.py', 'README.md', 'requirements-windows.txt', 'setup.py'])
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), pattern="*.py")
 		(['..'], ['main.py', 'setup.py'])
 		>>> App.get_files_at_path(os.path.dirname(os.path.abspath(__file__)), pattern="*.py", show_parent_folder=False)
