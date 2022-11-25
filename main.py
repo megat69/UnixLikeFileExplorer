@@ -14,6 +14,7 @@ class App:
 	"""
 	The App.
 	"""
+	# Key used to exit the app
 	EXIT_APP = '$'
 
 	def __init__(self):
@@ -423,7 +424,8 @@ if __name__ == '__main__':
 		--------- HELP ---------
 		Command line arguments :
 		-h, --help                : Shows this message and exits
-		-p, --default-path <path> : Changes the app's default path from the user's home directory to the given path 
+		-p, --default-path <path> : Changes the app's default path from the user's home directory to the given path
+		-q, --quit-symbol <char>  : Changes the app's default key used to exit ('$') with another specified key. Must be exactly one character. 
 		""".replace("\t", ""))
 		sys.exit(0)
 
@@ -435,5 +437,9 @@ if __name__ == '__main__':
 		# Changes the default path
 		if sys.argv[i] in ("--default-path", "-p"):
 			app.change_path_to(sys.argv[i + 1])
+
+		# Changes the app's default key used to exit
+		elif sys.argv[i] in ("--quit-symbol", "-q"):
+			App.EXIT_APP = sys.argv[i + 1][0]
 
 	app.run()
