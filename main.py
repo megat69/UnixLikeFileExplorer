@@ -1,5 +1,6 @@
 import curses
 import _curses
+import sys
 import os
 import glob
 import platform
@@ -222,8 +223,7 @@ class App:
 						temp_path = os.path.normpath(temp_path)
 
 						# Setting the current path to the temp path
-						self.path = temp_path
-						self.temp_path = self.path
+						self.change_path_to(temp_path)
 						self.selected_item = 0
 
 				else:  # If the selected item is a file, we open it
@@ -402,7 +402,20 @@ class App:
 		# Displays the text on the screen
 		self.stdscr.addstr(rows, middle_screen, text, flags)
 
+	def change_path_to(self, new_path: str):
+		"""
+		Changes the path and temp path to the given path.
+		"""
+		self.path = new_path
+		self.temp_path = self.path
+
 
 if __name__ == '__main__':
 	app = App()
+
+	# Parses the default path for the app to start in
+	for i in range(1, len(sys.argv), 2):
+		if sys.argv[i] in ("--default-path", "-p"):
+			app.change_path_to(sys.argv[i + 1])
+
 	app.run()
